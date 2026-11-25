@@ -41,6 +41,7 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:${assertjVersion}")
     testImplementation("io.grpc:grpc-testing:${grpcVersion}")
+    testImplementation("io.grpc:grpc-inprocess:${grpcVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${jupiterVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-migrationsupport:${jupiterVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}")

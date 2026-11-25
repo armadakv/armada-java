@@ -47,7 +47,7 @@ public class KVImpl extends Impl implements KV {
                 .build();
         return execute(
                 () -> stub.withDeadlineAfter(option.getTimeout(), option.getTimeoutUnit()).put(request),
-                put -> new PutResponse(new Response.HeaderImpl(put.getHeader()), new KeyValue(ByteSequence.from(put.getPrevKv().getKey()), ByteSequence.from(put.getPrevKv().getValue()))),
+                put -> new PutResponse(new Response.HeaderImpl(put.getHeader()), KeyValue.from(put.getPrevKv())),
                 RETRY_NEVER
         );
     }
@@ -70,12 +70,16 @@ public class KVImpl extends Impl implements KV {
                 .setCountOnly(option.isCountOnly())
                 .setKeysOnly(option.isKeysOnly())
                 .setLinearizable(!option.isSerializable())
+                .setMinModRevision(option.getMinModRevision())
+                .setMaxModRevision(option.getMaxModRevision())
+                .setMinCreateRevision(option.getMinCreateRevision())
+                .setMaxCreateRevision(option.getMaxCreateRevision())
                 .build();
 
         return execute(
                 () -> stub.withDeadlineAfter(option.getTimeout(), option.getTimeoutUnit()).range(request),
                 get -> {
-                    var kvs = get.getKvsList().stream().map(keyValue -> new KeyValue(ByteSequence.from(keyValue.getKey()), ByteSequence.from(keyValue.getValue()))).toList();
+                    var kvs = get.getKvsList().stream().map(KeyValue::from).toList();
                     return new GetResponse(new Response.HeaderImpl(get.getHeader()), kvs, get.getCount());
                 },
                 option.isSerializable() ? RETRY_ALWAYS : RETRY_TRANSIENT
@@ -100,6 +104,10 @@ public class KVImpl extends Impl implements KV {
                 .setCountOnly(option.isCountOnly())
                 .setKeysOnly(option.isKeysOnly())
                 .setLinearizable(!option.isSerializable())
+                .setMinModRevision(option.getMinModRevision())
+                .setMaxModRevision(option.getMaxModRevision())
+                .setMinCreateRevision(option.getMinCreateRevision())
+                .setMaxCreateRevision(option.getMaxCreateRevision())
                 .build();
         return execute(
                 () -> stub.withDeadlineAfter(option.getTimeout(), option.getTimeoutUnit()).iterateRange(request),
@@ -108,7 +116,7 @@ public class KVImpl extends Impl implements KV {
                                 false)
                         .map(get -> new GetResponse(
                                 new Response.HeaderImpl(get.getHeader()),
-                                get.getKvsList().stream().map(keyValue -> new KeyValue(ByteSequence.from(keyValue.getKey()), ByteSequence.from(keyValue.getValue()))).toList(),
+                                get.getKvsList().stream().map(KeyValue::from).toList(),
                                 get.getCount()
                         )),
                 option.isSerializable() ? RETRY_ALWAYS : RETRY_TRANSIENT
@@ -134,7 +142,7 @@ public class KVImpl extends Impl implements KV {
         return execute(
                 () -> stub.withDeadlineAfter(option.getTimeout(), option.getTimeoutUnit()).deleteRange(request),
                 delete -> {
-                    var kvs = delete.getPrevKvsList().stream().map(keyValue -> new KeyValue(ByteSequence.from(keyValue.getKey()), ByteSequence.from(keyValue.getValue()))).toList();
+                    var kvs = delete.getPrevKvsList().stream().map(KeyValue::from).toList();
                     return new DeleteResponse(new Response.HeaderImpl(delete.getHeader()), kvs, delete.getDeleted());
                 },
                 RETRY_NEVER
